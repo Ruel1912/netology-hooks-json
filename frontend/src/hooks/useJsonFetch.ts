@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
-  const [result, setResult] = useState<any>(null)
+  const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +18,7 @@ export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
         }
 
         const data = await response.json()
-        setResult(data)
+        setData(data)
 
       } catch (error) {
         if (error instanceof SyntaxError) {
@@ -34,5 +34,5 @@ export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
     fetchData()
   }, [url])
 
-  return [result, isLoading, error]
+  return [data, isLoading, error]
 }
