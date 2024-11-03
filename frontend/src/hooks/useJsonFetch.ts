@@ -1,35 +1,38 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
-export const useJsonFetch = (url: string, opt: any) => {
-  const [data, setData] = useState(null)
-  const [isLoading, setLoading] = useState(false)
-  const [hasError, setError] = useState(null)
+export const useJsonFetch = (url: string, opts: RequestInit = {}) => {
+  const [result, setResult] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-
-    let canceled = false
     const fetchData = async () => {
-      
-      if (canceled) {
-        return
-      }
-      setLoading(true)
-      fetch(url)
-      .then((response) => response.json())
-      .then((json) => {
-        if (!canceled) {
-          setData(json)
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(url, opts)
+
+        if (!response.ok) {
+          throw new Error((await response.json())?.status || response.statusText)
         }
-      })
-      .catch((error) => setError(error))
-      .finally(() => setLoading(false))
+
+        const data = await response.json()
+        setResult(data)
+
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          setError('Response is not valid JSON')
+        } else {
+          setError(error.message || 'Network error')
+        }
+      } finally {
+        setIsLoading(false)
+      }
     }
+
     fetchData()
+  }, [url])
 
-    return () => {
-      canceled = true
-    }
-  }, [url, opt])
-
-  return [data, isLoading, hasError]
+  return [result, isLoading, error]
 }
